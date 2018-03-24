@@ -6,7 +6,7 @@ Created on Wed Mar 14 19:11:39 2018
 """
 
 import csv
-
+import tools
 
 '''
 根据path地址将字符串写入文件中
@@ -16,8 +16,20 @@ def write_html(html_str, path):
     writer.write(html_str)
     writer.close()
     
+def load_ips(path):
+    reader = open(path, 'r')
+    
+    ips = []
+    
+    while True:
+        ip = reader.readline()
+        if not ip:
+            break
+        ips.append(ip.strip())
 
-
+    reader.close()
+    
+    return ips
 
 # 新建一个cvs文件
 def init_csv(path,attrs):
@@ -26,6 +38,16 @@ def init_csv(path,attrs):
     writer.writerow(attrs)
     csvfile.close()
     return
+
+
+# 在程序中打log，并将log写在
+def log(info,path):
+    writer = open(path, 'a',  encoding='utf-8')
+    time_str = tools.get_now_time()
+    writer.write('\n----------' + time_str + '----------\n')
+    writer.write(info + '\n')
+    writer.flush()
+    writer.close()
 
 # 写入cvs文件
 def write_csv(path,items):
@@ -60,3 +82,7 @@ def write_csv(path,items):
     
     csvfile.close()
     return
+
+if  __name__ == '__main__':
+
+    log("demo","C:\\Users\\wansho\\Desktop\\log.txt")
