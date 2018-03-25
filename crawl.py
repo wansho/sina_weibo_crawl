@@ -200,20 +200,50 @@ def parse_main_content(html_str):
     for microblog_soup in microblog_soups:
         
         # 获取昵称
-        nickname = microblog_soup.find('a',attrs = {'class' : 'nk'}).get_text().strip()
+        nickname = microblog_soup.find('a',attrs = {'class' : 'nk'})
+        # 进行判空处理，防止程序异常退出
+        if nickname == None: # 页面爬取失败，重新爬取
+            nextpage = -3
+            info = '爬取到的信息有错误，需要重新爬取该页面'
+            log(info)
+            return microblog_quene, nextpage, allpage
+        else:
+            nickname = nickname.get_text().strip()
+        
         # print('nickname : ' + nickname + '\n')
         
         # 获取用户主页  https://weibo.cn/a813689091
-        index = microblog_soup.find('a',attrs = {'class' : 'nk'}).get('href').strip()
+        index = microblog_soup.find('a',attrs = {'class' : 'nk'}).get('href')
+        # 进行判空处理，防止程序异常退出
+        if index == None: # 页面爬取失败，重新爬取
+            nextpage = -3
+            info = '爬取到的信息有错误，需要重新爬取该页面'
+            log(info)
+            return microblog_quene, nextpage, allpage
+        else:
+            index = index.strip()
         # print('index : ' + index + '\n')
         
         # 地址和性别
         sex,location = parse_user(index,cookie)
         
-        if sex == -1: #爬取失败
-            nextpage = -2
-            return microblog_quene, nextpage, allpage
-        
+        # 爬取用户主页的时候遇到问题
+        if sex == -1 or sex == -2:
+            try_times = 3
+            while try_times > 0:
+                try_times = try_times - 1
+                if sex == -2: # 解析网页的时候失败，说明返回的网页有问题，要重新爬取
+                    time_delay = random.randint(10,20)
+                else :
+                    time_delay = 60 * 6 # 爬取网页失败，6分钟后进行第二次尝试
+                time.sleep(time_delay)
+                sex,location = parse_user(index,cookie) # 第二次尝试
+                if sex != -1 and sex != -2:
+                    break
+            if try_times == 0: ## 尝试三次后仍然不成功
+                nextpage = -2 # 尝试仍然不成功，返回 -2，表示爬取用户主页三次后失败
+                return microblog_quene, nextpage, allpage
+            
         # 获取用户内容,内容中间有很多空格，需要删减
         # content需要分 是转发的，还是原创的
         divs = microblog_soup.find_all('div')
@@ -236,8 +266,8 @@ def parse_main_content(html_str):
         # print('content:' + content + '\n')
 
         # 获取时间   03月15日 23:26
-        time = microblog_soup.find('span',attrs = {'class' : 'ct'}).get_text().strip()
-        time = time[:12]
+        time1 = microblog_soup.find('span',attrs = {'class' : 'ct'}).get_text().strip()
+        time1 = time1[:12]
         # print('time:' + time + '\n')
         
         ## 用来匹配评论数、转发数等数字
@@ -295,12 +325,20 @@ def parse_main_content(html_str):
 根据用户主页的url，爬取用户的相关信息，例如性别、所在地等信息
 还可以爬取更多信息，例如学历，是否为大V
 返回性别和位置
+
+如果返回 -1 -1,则表示爬取失败，重新爬取
+如果返回 -2 -2，则表示爬取的内容有错误，需要重新爬取
+
 '''
 def parse_user(url,cookie):
+    
+    sex = -2
+    location = -2
     
     # 获取原网页
     html_source = downloadHtml(url,cookie)
     
+    # 爬取失败
     if html_source == -1:
         return html_source, html_source
         
@@ -311,8 +349,19 @@ def parse_user(url,cookie):
     
     user_soup = soup.find('div',attrs = {'class' : 'u'})
     
+    # 判断是否爬取的内容有错误
+    if user_soup == None:
+        return sex,location 
+    
     # 性别和地址所在的字符串
-    sex_location = user_soup.find('span',attrs = {'class' : 'ctt'}).get_text().strip()
+    sex_location = user_soup.find('span',attrs = {'class' : 'ctt'})
+    
+    # 判断是否爬取的内容有错误
+    if sex_location == None:
+        return sex,location 
+        
+    sex_location = sex_location.get_text().strip()
+        
     
     # 写正则表达式取出性别和地址
     re_str = r'男/.{0,6}|女/.{0,8}'
@@ -403,7 +452,7 @@ if  __name__ == '__main__':
     
     cookie = 'WEIBOCN_WM=3333_2001; _T_WM=5ad11550fbf1922d3534220fe93e26c0; SCF=AnA5vjYoP5UxdBHxe5-hFYridMNAWw5uGpGR_ES8HicMWMEzTrLqLF4LtJQ3NTvEbM_lI0h3yqrTbowz_3H7Hd8.; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9Wh224JmmGS16QC9q88gApDH5JpX5K-hUgL.Foq71K2f1KepSKz2dJLoI79Nqg40IsYt; SUB=_2A253tIRXDeRhGeVI41oW9SbMyT2IHXVVViwfrDV6PUJbkdAKLVL1kW1NTBBvfj_JczYE_K1_wfAtEv_DsKiqcfOE; SUHB=0BL4btDxeWgkqF; SSOLoginState=1521546247'
     
-    days = 23 # 往前爬取一个月的微博内容
+    days = 16 # 往前爬取一个月的微博内容
     while days > 0:
         
         # 一天一天的爬取
@@ -457,6 +506,9 @@ if  __name__ == '__main__':
         write_data(microblogs,path,2)
         
         old_nextpage = 1
+        
+        error_count = 1 # 如果爬取的页面一直有问题，说明可能下一页不是正常的页面，所以我们要及时跳出来
+        
             
         ##############################################################
         # 开始爬取 第 n 页  n >= 2
@@ -498,15 +550,20 @@ if  __name__ == '__main__':
             fixed_html = fix_html(html_source)
             microblog_quene, nextpage, allpage = parse_main_content(fixed_html)
             
-            if nextpage == -2: # 爬取失败,在爬取个人主页的时候失败
-                info = "-------------爬取失败 用户主页爬取失败-------------"
+            if nextpage == -2: # 爬取失败,在爬取个人主页三次后的时候失败
+                info = "-------------爬取用户主页三次后失败-------------"
                 log(info)
                 # sys.exit()
                 break
             
             if nextpage == -3: # 爬取的网页哟问题，需要重新爬取
-                nextpage = old_nextpage
-                continue
+                error_count = error_count + 1 
+                if error_count == 6: # 尝试六次后，依旧有问题，说明可能爬到了不是想要的页面
+                    error_count = 0
+                    break
+                else:
+                    nextpage = old_nextpage
+                    continue
             
             if nextpage == -1: # 一天的内容已经爬取完成
                 break
