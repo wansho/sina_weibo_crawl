@@ -312,7 +312,7 @@ def parse_main_content(html_str):
         microblog_item.set_sex(sex)
         microblog_item.set_repost_count(repost_count)
         microblog_item.set_thumb_up_count(thumb_up_count)
-        microblog_item.set_time(time)
+        microblog_item.set_time(time1)  # 这里忘记改了。。。
         microblog_item.set_content(content)
         
         microblog_quene.append(microblog_item)
@@ -441,7 +441,13 @@ def save_break_point(path,info):
 
 ###############################################################
 
-if  __name__ == '__main__':
+'''
+# 按照日期进行爬取
+startday 是从今天往前算开始爬取的天数
+days 是从当前往前算截止的天数
+startday - days 就是要爬取的天数
+'''
+def crawl_as_days(startday,days):
     path = "C:\\Users\\wansho\\Desktop\\微博爬虫\\微博数据.csv"
     
     break_point_path = 'C:\\Users\\wansho\\Desktop\\微博爬虫\\breakpoint.txt'
@@ -454,13 +460,13 @@ if  __name__ == '__main__':
     
     cookie = 'WEIBOCN_WM=3333_2001; _T_WM=5ad11550fbf1922d3534220fe93e26c0; SCF=AnA5vjYoP5UxdBHxe5-hFYridMNAWw5uGpGR_ES8HicMWMEzTrLqLF4LtJQ3NTvEbM_lI0h3yqrTbowz_3H7Hd8.; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9Wh224JmmGS16QC9q88gApDH5JpX5K-hUgL.Foq71K2f1KepSKz2dJLoI79Nqg40IsYt; SUB=_2A253tIRXDeRhGeVI41oW9SbMyT2IHXVVViwfrDV6PUJbkdAKLVL1kW1NTBBvfj_JczYE_K1_wfAtEv_DsKiqcfOE; SUHB=0BL4btDxeWgkqF; SSOLoginState=1521546247'
     
-    days = 16 # 往前爬取一个月的微博内容
-    while days > 0:
+    # startday = 16 # 往前爬取一个月的微博内容
+    while startday > days:
         
         # 一天一天的爬取
-        start_time = 'starttime=' + tools.get_time(0 - days - 1)
-        end_time = 'endtime=' + tools.get_time(0 - days)
-        days = days - 1
+        start_time = 'starttime=' + tools.get_time(0 - startday - 1)
+        end_time = 'endtime=' + tools.get_time(0 - startday - 1) # 经过测试，如果是爬取一天内的内容，那么startday 和 endday应该一样
+        startday = startday - 1
         
         first_url = set_url(keyword, start_time, end_time)
         
@@ -586,4 +592,7 @@ if  __name__ == '__main__':
         write_data(microblogs,path,1)
         
     
-        
+if __name__ == "__main__":
+    crawl_as_days(17,0)
+    
+    crawl_as_days(51, 25)
