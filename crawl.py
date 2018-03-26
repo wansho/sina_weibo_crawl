@@ -160,7 +160,7 @@ def fix_html(html_str):
     如果 == -2 ，那么在爬取性别和地址的时候爬取失败，要及时存储数据，退出程序
     如果 == -3，那么说明网页爬取的有问题，需要重新爬取
 '''
-def parse_main_content(html_str):
+def parse_main_content(html_str, cookie):
     
     # 解析每一条微博
     microblog_quene = []
@@ -464,8 +464,8 @@ def crawl_as_days(startday,days):
     while startday > days:
         
         # 一天一天的爬取
-        start_time = 'starttime=' + tools.get_time(0 - startday - 1)
-        end_time = 'endtime=' + tools.get_time(0 - startday - 1) # 经过测试，如果是爬取一天内的内容，那么startday 和 endday应该一样
+        start_time = 'starttime=' + tools.get_time(0 - startday )
+        end_time = 'endtime=' + tools.get_time(0 - startday ) # 经过测试，如果是爬取一天内的内容，那么startday 和 endday应该一样
         startday = startday - 1
         
         first_url = set_url(keyword, start_time, end_time)
@@ -505,7 +505,7 @@ def crawl_as_days(startday,days):
         
         microblogs =  []
         
-        microblog_quene, nextpage,allpage = parse_main_content(fixed_html)
+        microblog_quene, nextpage,allpage = parse_main_content(fixed_html, cookie)
         
         # 合并爬取到的BLOG
         microblogs = microblogs + microblog_quene
@@ -556,7 +556,7 @@ def crawl_as_days(startday,days):
     
             
             fixed_html = fix_html(html_source)
-            microblog_quene, nextpage, allpage = parse_main_content(fixed_html)
+            microblog_quene, nextpage, allpage = parse_main_content(fixed_html, cookie)
             
             if nextpage == -2: # 爬取失败,在爬取个人主页三次后的时候失败
                 info = "-------------爬取用户主页三次后失败-------------"
@@ -585,7 +585,7 @@ def crawl_as_days(startday,days):
             write_data(microblogs,path,2)
             
             # 延时，防止被反爬虫，这个时间需要不断测试，达到一个平衡点
-            sleep_time = random.randint(10,20)
+            sleep_time = random.randint(13,20)
             time.sleep(sleep_time)
             
         # 爬完一天的数据，进行一次存储
@@ -593,6 +593,10 @@ def crawl_as_days(startday,days):
         
     
 if __name__ == "__main__":
-    crawl_as_days(17,0)
+    # 爬取一月的数据
+    crawl_as_days(77,51)
     
-    crawl_as_days(51, 25)
+    # 爬取 17年12月的数据  12 月1 日 到 12月 31日
+    crawl_as_days(115, 85)
+    
+    # crawl_as_days(51, 25)
