@@ -50,7 +50,7 @@ def set_url(keyword, start_time, end_time):
     url_smblog = 'smblog=' +  quote(smblog)  
     
     #rand 会变，每换一个话题，都要在浏览器中重新获取rand值
-    rand = 'rand=2151'
+    rand = 'rand=4910'
     others = 'p=r&' + rand + '&p=r'
     
     connector = '&'
@@ -267,7 +267,11 @@ def parse_main_content(html_str, cookie):
 
         # 获取时间   03月15日 23:26
         time1 = microblog_soup.find('span',attrs = {'class' : 'ct'}).get_text().strip()
-        time1 = time1[:12]
+        re_fore_year = r'[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+        if re.search(re_fore_year, time1): # 表示爬取的事去年的数据
+            time1 = time1[:19]
+        else: # 爬取的是今年的数据
+            time1 = time1[:12]
         # print('time:' + time + '\n')
         
         ## 用来匹配评论数、转发数等数字
@@ -381,7 +385,9 @@ def parse_user(url,cookie):
 在系统运行中打log
 '''
 def log(ss):
-    path = "C:\\Users\\wansho\\Desktop\\微博爬虫\\logs.txt"
+    # 主机上的地址："D:\\PythonProjects\\微博爬虫\\weibo_mobile_crawl\\weibo_mobile_crawl\\暂时爬取到的数据\\\\logs.txt"
+    # miix上的地址："D:\\Python工程\\weibo_mobile_crawl\\暂时爬取到的数据\\logs.txt"
+    path = "D:\\PythonProjects\\微博爬虫\\weibo_mobile_crawl\\weibo_mobile_crawl\\暂时爬取到的数据\\logs.txt"
     my_io.log(ss,path)
     print(ss)
 
@@ -448,9 +454,12 @@ days 是从当前往前算截止的天数
 startday - days 就是要爬取的天数
 '''
 def crawl_as_days(startday,days):
-    path = "C:\\Users\\wansho\\Desktop\\微博爬虫\\微博数据.csv"
     
-    break_point_path = 'C:\\Users\\wansho\\Desktop\\微博爬虫\\breakpoint.txt'
+    # 主机上的地址："D:\\PythonProjects\\微博爬虫\\weibo_mobile_crawl\\weibo_mobile_crawl\\暂时爬取到的数据\\微博数据2017.csv"
+    # miix上的地址："D:\\Python工程\\weibo_mobile_crawl\\暂时爬取到的数据\\微博数据2017.csv"
+    path = "D:\\PythonProjects\\微博爬虫\\weibo_mobile_crawl\\weibo_mobile_crawl\\暂时爬取到的数据\\微博数据2017.csv"
+    
+    break_point_path = 'D:\\PythonProjects\\微博爬虫\\weibo_mobile_crawl\\weibo_mobile_crawl\\breakpoint.txt'
     
     ## 如果是断点续爬，那么就不用在这里初始化
     # attrs = ['昵称','性别','所在地','时间','内容','点赞数','转发数','评论数','主页']
@@ -458,10 +467,10 @@ def crawl_as_days(startday,days):
     
     keyword = "苹果手机"
     
-    cookie = 'WEIBOCN_WM=3333_2001; _T_WM=5ad11550fbf1922d3534220fe93e26c0; SCF=AnA5vjYoP5UxdBHxe5-hFYridMNAWw5uGpGR_ES8HicMWMEzTrLqLF4LtJQ3NTvEbM_lI0h3yqrTbowz_3H7Hd8.; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9Wh224JmmGS16QC9q88gApDH5JpX5K-hUgL.Foq71K2f1KepSKz2dJLoI79Nqg40IsYt; SUB=_2A253tIRXDeRhGeVI41oW9SbMyT2IHXVVViwfrDV6PUJbkdAKLVL1kW1NTBBvfj_JczYE_K1_wfAtEv_DsKiqcfOE; SUHB=0BL4btDxeWgkqF; SSOLoginState=1521546247'
+    cookie = '_T_WM=ff8b68f7dbc43e8534e7d685b77ccd93; ALF=1524968261; SCF=AvM-OCxaYmoTZX7kIB8NJZ6bkR-ysOZHCDzNAXuZfYafVwIZ_k2kIFC4O4KRSB9XHDOKu1e-MTc9CJITXM9vGGs.; SUB=_2A253udGPDeRhGeBO6lsX8ybIzD6IHXVVRf_HrDV6PUJbktANLUzGkW1NSj5tVCzuN4QGOT-9R6BkKIuasQnQl1q8; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WWiCWD1EyDJf6mj60a8NMaP5JpX5K-hUgL.Foq7eK.ce0nXS0z2dJLoIXeLxKqLB-BLBKeLxK-L1-eLBKnLxKMLB.eL1KeLxK-L1hqLBoz41CH8SCHFeF-RxbH8Sb-ReFHWBCH8SC-RSCHFxh2N; SUHB=0k1CebGERYWl-K; SSOLoginState=1522377183'
     
     # startday = 16 # 往前爬取一个月的微博内容
-    while startday > days:
+    while startday >= days:
         
         # 一天一天的爬取
         start_time = 'starttime=' + tools.get_time(0 - startday )
@@ -594,9 +603,18 @@ def crawl_as_days(startday,days):
     
 if __name__ == "__main__":
     # 爬取一月的数据
-    crawl_as_days(77,51)
+    #crawl_as_days(77,51)
     
     # 爬取 17年12月的数据  12 月1 日 到 12月 31日
-    crawl_as_days(115, 85)
+    #crawl_as_days(115, 85)
     
-    # crawl_as_days(51, 25)
+    # 爬取 2017年 11月 1日到 2017年12月 30日的数据
+    # crawl_as_days(146,86)
+    
+    # 爬取 2017年12月 31日的数据
+    # crawl_as_days(87,87)
+    
+    # 爬取 2017年 9月 1日到 2017年10月 31日的数据
+    # crawl_as_days(208,146)
+    
+    crawl_as_days(300,208)

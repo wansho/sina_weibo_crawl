@@ -1,5 +1,5 @@
 [TOC]
-## Introduction
+# Introduction
 最近需要新浪微博的数据做研究，苦于找不到满意的数据，新浪微博的API对数据的获取有限制，也找不到合适的爬虫代码，遂自己实现了一个爬取新浪微博的爬虫。
 
 爬取的数据是  `新浪微博搜索某一个话题`，得到的微博数据，下面是爬取到的有关苹果手机的微博示例：
@@ -30,9 +30,10 @@
 
 * * *
 
-## Programming
+# Programming
 
-#### 选择合适的爬取源
+* * *
+## 选择合适的爬取源
 
 由于之前爬取豆瓣电影评论的时候，我直接爬取了PC浏览器端的网页，而且在利用cookie进行模拟登陆后爬取的非常顺利，所以我觉得微博也应该这么爬取，所以我注册了一个微博的账号，通过浏览器端拿到了cookie，觉得万事大吉了。根本没有考虑到新浪微博和豆瓣的差异。
 
@@ -79,7 +80,7 @@ encode("utf-8").decode('unicode_escape')
 
 * * *
 
-#### 分析生成要爬取网站的`url`
+## 分析生成要爬取网站的`url`
 
 确定了要爬取的网页后，接下来的事情就非常轻松了。
 
@@ -114,7 +115,7 @@ url_keyword = 'keyword=' + quote(keyword)
 ```
 
 * * *
-#### 下载目标网页
+## 下载目标网页
 
 url构造出来后，那么就可以下载目标网页了。
 
@@ -161,7 +162,7 @@ header的获取步骤如下：
 ```
 
 * * *
-#### 解析目标网页
+### 解析目标网页
 网页的解析，我使用的工具是` beautifulsoap `。
 
 首先修补一下网页，使的HTML源码呈现出层次，这样又便于我们对源码进行分析，找到里面的规律。
@@ -258,7 +259,7 @@ content = microblog_soup.find('span',attrs = {'class' : 'ctt'}).get_text().strip
 
 * * *
 
-#### 数据的存储
+## 数据的存储
 目前接触到的比较方便的存储方式，就是存储成csv文件。
 代码如下：
 ```
@@ -306,17 +307,50 @@ my_io.write_csv(path,microblogs)
 ```
 * * *
 
-## Source code
+# Source code
 [Github](https://github.com/wansho/)  https://github.com/wansho/sina_weibo_crawl
 
 
 * * *
 
-## Next
+# 遇到的坑
+
 现在写成的爬虫还是有缺陷的，虽然采用了cookie模拟登陆，但是在爬取的过程中还是能够被微博反爬虫机制发现，目前问题还没有解决。
+## 2018年3月25日, 星期日更新
+一个星期过去了，我来更新一下这段时间在改bug的时候遇到的坑
+
+**1、反爬虫问题**
+
+经过反复测试，两个网页的请求时间如果限制在 10~20 s 的随机时间，那么爬虫被检测到的概率就很小了。（经过半天的测试，就被新浪检测到一次），有一次我作死把时间调成了 10~15s，然后开始爬取，很明显过几分钟就被封一次。
+
+新浪微博发送过来的cookie可能过几天就失效了，需要更新cookie，才能正常爬取。
+
+经过我的反复实践，我发现，在新浪微博刚注册的、安全性不是很高、没有动态的账号，被微博反爬虫检测到的概率更高。这里没有数据，只有直觉~
+
+
+**2、爬虫程序的复杂性**
+
+面对一个复杂的网页，爬虫在运行的时候可能会因为各种复杂的原因而崩溃。有时候是返回的网页是无效信息（微博服务器端的问题），有时候是beautifulsoap的判空处理没有想到，所以程序在运行中充满了不确定性，我们只有冷静的接受这种不确定性，才能不断趋近于完美。
+
+解决这个问题的一个方法，就是增加数据 *冗余度*，对于出现问题的天数，反复爬取，直到顺利爬取成功，接下来用linux命令去除一下重复即可。
+
+**3、爬虫的log**
+
+应对爬虫程序不确定性的一个好方法是在程序中打 log，并且把log写入文本中，方便遇到bug的时候查 log 解bug。
+
+## 2018年3月30日, 星期五
+
+**反爬虫问题**
+昨天发现 `http 403 forbidden` 了，而且从一开始爬取就forbidden，可能哪个cookie用了太久，就试了清理了浏览器的cookie，又换了一个cookie，发现还是不行，运行了一会又被封了。今天换了一个账号，爬取正常，但是，我忘记了换一下 rand 参数试试，毕竟昨天一开始爬取就forbidden，可能不是cookie的原因，而是rand好久没换了。为了避免这种事情再次发生，觉得，每一次爬取，都先在浏览器上运行一次，包括填入时间范围生成最新的rand，并且清理一下cookie，换一个cookie。总结一下就是，每一次爬取之前：
+* 换rand
+* 换cookie
+
+**更新了爬取到的数据**
+共享18年1月1日到3月24日爬取到的含有苹果手机四个字的微博数据。一共30000条。
+
 
 * * *
-## Reference
+# Reference
 1. `python转码` http://blog.csdn.net/yexiaohhjk/article/details/68066843
 2. `优先选择爬移动版`  https://www.zhihu.com/question/29666539 
 3. `编解码报错` http://blog.csdn.net/Hudeyu777/article/details/76023441
@@ -324,7 +358,7 @@ my_io.write_csv(path,microblogs)
 5. `python 之 BeautifulSoup标签查找与信息提取`   https://www.cnblogs.com/my1e3/p/6657926.html?utm_source=itdadao&utm_medium=referral
 
 * * *
-## Tools
+# Tools
 1. 在线正则表达式 http://tool.oschina.net/regex/
 2. Unicode编码转换器 http://tool.chinaz.com/Tools/Unicode.aspx
 3. url转码 http://tool.oschina.net/encode?type=4

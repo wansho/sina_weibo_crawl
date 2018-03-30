@@ -7,6 +7,9 @@ Created on Wed Mar 21 19:57:51 2018
 import datetime  
 import time
 
+'''
+获取当前日期前后的日期
+'''
 def get_time(offset):
 
     today = datetime.date.today() 
@@ -16,6 +19,9 @@ def get_time(offset):
 
     return need_time
 
+'''
+获取当前年月日时分秒
+'''
 def get_now_time():
     today = datetime.date.today() 
     today_str = today.strftime('%Y-%m-%d') + '  ' + time.strftime("%H:%M:%S")  

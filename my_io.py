@@ -33,7 +33,7 @@ def load_ips(path):
 
 # 新建一个cvs文件
 def init_csv(path,attrs):
-    csvfile = open(path, 'a', newline='', encoding='utf-8')
+    csvfile = open(path, 'a', newline='', encoding='utf_8_sig')
     writer = csv.writer(csvfile)
     writer.writerow(attrs)
     csvfile.close()
@@ -51,7 +51,7 @@ def log(info,path):
 
 # 写入cvs文件
 def write_csv(path,items):
-    csvfile = open(path, 'a', newline='',  encoding='utf-8')
+    csvfile = open(path, 'a', newline='',  encoding='utf_8_sig')
     writer = csv.writer(csvfile)
     
     row = []
@@ -82,6 +82,8 @@ def write_csv(path,items):
     
     csvfile.close()
     return
+
+
 
 if  __name__ == '__main__':
 
